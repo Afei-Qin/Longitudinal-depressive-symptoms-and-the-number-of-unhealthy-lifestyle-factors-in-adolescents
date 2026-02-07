@@ -1,0 +1,462 @@
+Mplus – RI-CLPMs codes
+
+Model a – baseline model, without any covariates
+TITLE: RI_CLPM_code
+  DATA:
+    FILE = "fulldataRICLPM.csv";
+  VARIABLE:
+    NAMES = id age2 age3 age4 CESD2 CESD3 CESD4
+    male2 male3 male4 minzu2 minzu3 minzu4
+    ace2 ace3 ace4 live2 live3 live4
+    regi2 regi3 regi4 camp2 camp3 camp4
+    bmi2 bmi3 bmi4 bully2 bully3 bully4 
+    acap2 acap3 acap4 unlis2 unlis3 unlis4;
+    
+    USEVARIABLES = CESD2 CESD3 CESD4
+    unlis2 unlis3 unlis4;
+   
+  ANALYSIS:
+    TYPE = GENERAL;
+    ESTIMATOR = MLR; 
+    MODEL = NOCOV;
+  
+  MODEL:
+    !Create 2 individual factors (random intercepts)
+    RI_unlis BY unlis2@1 unlis3@1 unlis4@1;
+    RI_CESD BY CESD2@1 CESD3@1 CESD4@1;
+
+    !Create within-person centered variables
+    c_unlis2 BY unlis2@1;
+    c_unlis3 BY unlis3@1;
+    c_unlis4 BY unlis4@1;
+    c_CESD2 BY CESD2@1;
+    c_CESD3 BY CESD3@1;
+    c_CESD4 BY CESD4@1;
+    
+    !Constrain the measurement error variances to 0
+    unlis2-unlis4@0;
+    CESD2-CESD4@0;
+
+    !Estimate the lagged effects between the within-person centered variables
+    c_unlis3 ON c_unlis2 c_CESD2;
+    c_unlis4 ON c_unlis3 c_CESD3;
+    c_CESD3 ON c_CESD2 c_unlis2;
+    c_CESD4 ON c_CESD3 c_unlis3;
+    
+    ! Estimate covariance between random intercepts
+    RI_unlis WITH RI_CESD;
+    
+    !Estimate the covariance between the within-person centered
+    !variables at the first wave
+    c_unlis2 WITH c_CESD2;
+    
+    !Estimate the covariances between the residuals of
+    !the within-person centered variables
+    unlis3 WITH c_CESD3;
+    unlis4 WITH c_CESD4;
+    
+    !Fix the correlation between the individual factors
+    !and the other exogenous variables to 0
+    RI_unlis WITH c_unlis2@0 c_CESD2@0;
+    RI_CESD WITH c_CESD2@0 c_unlis2@0;
+
+  OUTPUT:
+TECH1 STDYX SAMPSTAT CINTERVAL;
+
+
+
+Model b – Model a with time-invariant covariates: age, gender, ethnicity, region, living with father/mother, and living on campus at T1
+TITLE: RI_CLPM_code
+  DATA:
+    FILE = "fulldataRICLPM.csv";
+  VARIABLE:
+    NAMES = id age2 age3 age4 CESD2 CESD3 CESD4
+    male2 male3 male4 minzu2 minzu3 minzu4
+    ace2 ace3 ace4 live2 live3 live4
+    regi2 regi3 regi4 camp2 camp3 camp4
+    bmi2 bmi3 bmi4 bully2 bully3 bully4 
+    acap2 acap3 acap4 unlis2 unlis3 unlis4;
+    
+    USEVARIABLES = CESD2 CESD3 CESD4
+    unlis2 unlis3 unlis4 
+    age2 male2 minzu2 live2 regi2 camp2;
+   
+  ANALYSIS:
+    TYPE = GENERAL;
+    ESTIMATOR = MLR;
+    MODEL = NOCOV; 
+  
+  MODEL:
+    !Create 2 individual factors (random intercepts)
+    RI_unlis BY unlis2@1 unlis3@1 unlis4@1;
+    RI_CESD BY CESD2@1 CESD3@1 CESD4@1;
+
+    !Create within-person centered variables
+    c_unlis2 BY unlis2@1;
+    c_unlis3 BY unlis3@1;
+    c_unlis4 BY unlis4@1;
+    c_CESD2 BY CESD2@1;
+    c_CESD3 BY CESD3@1;
+    c_CESD4 BY CESD4@1;
+    
+    !Constrain the measurement error variances to 0
+    unlis2-unlis4@0;
+    CESD2-CESD4@0;
+
+    !Estimate the lagged effects between the within-person centered variables
+    c_unlis3 ON c_unlis2 c_CESD2;
+    c_unlis4 ON c_unlis3 c_CESD3;
+    c_CESD3 ON c_CESD2 c_unlis2;
+    c_CESD4 ON c_CESD3 c_unlis3;
+    
+    ! Estimate covariance between random intercepts
+    RI_unlis WITH RI_CESD;
+    
+    !Estimate the covariance between the within-person centered
+    !variables at the first wave
+    c_unlis2 WITH c_CESD2;
+    
+    !Estimate the covariances between the residuals of
+    !the within-person centered variables
+    c_unlis3 WITH c_CESD3;
+    c_unlis4 WITH c_CESD4;
+    
+    !Fix the correlation between the individual factors
+    !and the other exogenous variables to 0
+    RI_unlis WITH c_unlis2@0 c_CESD2@0;
+    RI_CESD WITH c_CESD2@0 c_unlis2@0;
+    
+    !=== Add the covariates as predictor variables ===
+    unlis2 ON age2 male2 minzu2 live2 regi2 camp2;
+    CESD2 ON age2 male2 minzu2 live2 regi2 camp2;
+    
+  OUTPUT:
+TECH1 STDYX SAMPSTAT CINTERVAL;
+
+
+
+Model c – Model b with time-varying covariates: academic level and BMI at T1, T2, and T3
+TITLE: RI_CLPM_code
+  DATA:
+    FILE = "fulldataRICLPM.csv";
+  VARIABLE:
+    NAMES = id age2 age3 age4 CESD2 CESD3 CESD4
+    male2 male3 male4 minzu2 minzu3 minzu4
+    ace2 ace3 ace4 live2 live3 live4
+    regi2 regi3 regi4 camp2 camp3 camp4
+    bmi2 bmi3 bmi4 bully2 bully3 bully4 
+    acap2 acap3 acap4 unlis2 unlis3 unlis4;
+    
+    USEVARIABLES = CESD2 CESD3 CESD4
+    unlis2 unlis3 unlis4 
+    age2 male2 minzu2 live2 regi2 camp2
+    ace2 ace3 ace4 bmi2 bmi3 bmi4;
+   
+  ANALYSIS:
+    TYPE = GENERAL;
+    ESTIMATOR = MLR;
+    MODEL = NOCOV; 
+  
+  MODEL:
+    !Create 2 individual factors (random intercepts)
+    RI_unlis BY unlis2@1 unlis3@1 unlis4@1;
+    RI_CESD BY CESD2@1 CESD3@1 CESD4@1;
+
+    !Create within-person centered variables
+    c_unlis2 BY unlis2@1;
+    c_unlis3 BY unlis3@1;
+    c_unlis4 BY unlis4@1;
+    c_CESD2 BY CESD2@1;
+    c_CESD3 BY CESD3@1;
+    c_CESD4 BY CESD4@1;
+    
+    !Constrain the measurement error variances to 0
+    unlis2-unlis4@0;
+    CESD2-CESD4@0;
+    
+    !Estimate the lagged effects between the within-person centered variables
+    c_unlis3 ON c_unlis2 c_CESD2;
+    c_unlis4 ON c_unlis3 c_CESD3;
+    c_CESD3 ON c_CESD2 c_unlis2;
+    c_CESD4 ON c_CESD3 c_unlis3;
+    
+    ! Estimate covariance between random intercepts
+    RI_unlis WITH RI_CESD;
+    
+    !Estimate the covariance between the within-person centered
+    !variables at the first wave
+    c_unlis2 WITH c_CESD2;
+    
+    !Estimate the covariances between the residuals of
+    !the within-person centered variables
+    c_unlis3 WITH c_CESD3;
+    c_unlis4 WITH c_CESD4;
+    
+    !Fix the correlation between the individual factors
+    !and the other exogenous variables to 0
+    RI_unlis WITH c_unlis2@0 c_CESD2@0;
+    RI_CESD WITH c_CESD2@0 c_unlis2@0;
+    
+    !=== Add the covariates as predictor variables ===
+    unlis2 ON age2 male2 minzu2 live2 regi2 camp2;
+    CESD2 ON age2 male2 minzu2 live2 regi2 camp2;
+    
+    unlis2 ON ace2 bmi2;
+    CESD2 ON ace2 bmi2;
+
+    unlis3 ON ace3 bmi3;
+    CESD3 ON ace3 bmi3;
+
+    unlis4 ON ace4 bmi4;
+    CESD4 ON ace4 bmi4;
+
+  OUTPUT:
+TECH1 STDYX SAMPSTAT CINTERVAL;
+
+Model d – Model c with autoregressive paths constrained to be equal across time
+TITLE: RI_CLPM_code
+  DATA:
+    FILE = "fulldataRICLPM.csv";
+  VARIABLE:
+    NAMES = id age2 age3 age4 CESD2 CESD3 CESD4
+    male2 male3 male4 minzu2 minzu3 minzu4
+    ace2 ace3 ace4 live2 live3 live4
+    regi2 regi3 regi4 camp2 camp3 camp4
+    bmi2 bmi3 bmi4 bully2 bully3 bully4 
+    acap2 acap3 acap4 unlis2 unlis3 unlis4;
+    
+    USEVARIABLES = CESD2 CESD3 CESD4
+    unlis2 unlis3 unlis4 
+    age2 male2 minzu2 live2 regi2 camp2 
+    ace2 ace3 ace4 bmi2 bmi3 bmi4;
+   
+  ANALYSIS:
+    TYPE = GENERAL;
+    ESTIMATOR = MLR;
+    MODEL = NOCOV; 
+  
+  MODEL:
+    !Create 2 individual factors (random intercepts)
+    RI_unlis BY unlis2@1 unlis3@1 unlis4@1;
+    RI_CESD BY CESD2@1 CESD3@1 CESD4@1;
+
+    !Create within-person centered variables
+    c_unlis2 BY unlis2@1;
+    c_unlis3 BY unlis3@1;
+    c_unlis4 BY unlis4@1;
+    c_CESD2 BY CESD2@1;
+    c_CESD3 BY CESD3@1;
+    c_CESD4 BY CESD4@1;
+    
+    !Constrain the measurement error variances to 0
+    unlis2-unlis4@0;
+    CESD2-CESD4@0;
+    
+    !Estimate the lagged effects between the within-person centered variables
+    c_unlis3 ON c_unlis2 (a1)
+                      c_CESD2;
+    c_unlis4 ON c_unlis3 (a1)
+                      c_CESD3;
+    c_CESD3 ON c_CESD2 (a2)
+                      c_unlis2;
+    c_CESD4 ON c_CESD3 (a2)
+                      c_unlis3;
+    
+    ! Estimate covariance between random intercepts
+    RI_unlis WITH RI_CESD;
+    
+    !Estimate the covariance between the within-person centered
+    !variables at the first wave
+    c_unlis2 WITH c_CESD2;
+    
+    !Estimate the covariances between the residuals of
+    !the within-person centered variables
+    c_unlis3 WITH c_CESD3;
+    c_unlis4 WITH c_CESD4;
+    
+    !Fix the correlation between the individual factors
+    !and the other exogenous variables to 0
+    RI_unlis WITH c_unlis2@0 c_CESD2@0;
+    RI_CESD WITH c_CESD2@0 c_unlis2@0;
+    
+    !=== Add the covariates as predictor variables ===
+    unlis2 ON age2 male2 minzu2 live2 regi2 camp2;
+    CESD2 ON age2 male2 minzu2 live2 regi2 camp2;
+    
+    unlis2 ON ace2 bmi2;
+    CESD2 ON ace2 bmi2;
+
+    unlis3 ON ace3 bmi3;
+    CESD3 ON ace3 bmi3;
+
+    unlis4 ON ace4 bmi4;
+    CESD4 ON ace4 bmi4;
+
+  OUTPUT:
+TECH1 STDYX SAMPSTAT CINTERVAL;
+
+
+Model e – Model c with cross-lagged paths constrained to be equal across time
+TITLE: RI_CLPM_code
+  DATA:
+    FILE = "fulldataRICLPM.csv";
+  VARIABLE:
+    NAMES = id age2 age3 age4 CESD2 CESD3 CESD4
+    male2 male3 male4 minzu2 minzu3 minzu4
+    ace2 ace3 ace4 live2 live3 live4
+    regi2 regi3 regi4 camp2 camp3 camp4
+    bmi2 bmi3 bmi4 bully2 bully3 bully4 
+    acap2 acap3 acap4 unlis2 unlis3 unlis4;
+    
+    USEVARIABLES = CESD2 CESD3 CESD4
+    unlis2 unlis3 unlis4 
+    age2 male2 minzu2 live2 regi2 camp2 
+    ace2 ace3 ace4 bmi2 bmi3 bmi4;
+   
+  ANALYSIS:
+    TYPE = GENERAL;
+    ESTIMATOR = MLR;
+    MODEL = NOCOV; 
+  
+  MODEL:
+    !Create 2 individual factors (random intercepts)
+    RI_unlis BY unlis2@1 unlis3@1 unlis4@1;
+    RI_CESD BY CESD2@1 CESD3@1 CESD4@1;
+
+    !Create within-person centered variables
+    c_unlis2 BY unlis2@1;
+    c_unlis3 BY unlis3@1;
+    c_unlis4 BY unlis4@1;
+    c_CESD2 BY CESD2@1;
+    c_CESD3 BY CESD3@1;
+    c_CESD4 BY CESD4@1;
+    
+    !Constrain the measurement error variances to 0
+    unlis2-unlis4@0;
+    CESD2-CESD4@0;
+    
+    !Estimate the lagged effects between the within-person centered variables
+    c_unlis3 ON c_unlis2 
+                     c_CESD2 (c1);
+    c_unlis4 ON c_unlis3 
+                     c_CESD3 (c1);
+    c_CESD3 ON c_CESD2 
+                     c_unlis2 (c2);
+    c_CESD4 ON c_CESD3 
+                     c_unlis3 (c2);
+    
+    ! Estimate covariance between random intercepts
+    RI_unlis WITH RI_CESD;
+    
+    !Estimate the covariance between the within-person centered
+    !variables at the first wave
+    c_unlis2 WITH c_CESD2;
+    
+    !Estimate the covariances between the residuals of
+    !the within-person centered variables
+    c_unlis3 WITH c_CESD3;
+    c_unlis4 WITH c_CESD4;
+    
+    !Fix the correlation between the individual factors
+    !and the other exogenous variables to 0
+    RI_unlis WITH c_unlis2@0 c_CESD2@0;
+    RI_CESD WITH c_CESD2@0 c_unlis2@0;
+    
+    !=== Add the covariates as predictor variables ===
+    unlis2 ON age2 male2 minzu2 live2 regi2 camp2;
+    CESD2 ON age2 male2 minzu2 live2 regi2 camp2;
+    
+    unlis2 ON ace2 bmi2;
+    CESD2 ON ace2 bmi2;
+
+    unlis3 ON ace3 bmi3;
+    CESD3 ON ace3 bmi3;
+
+    unlis4 ON ace4 bmi4;
+    CESD4 ON ace4 bmi4;
+
+  OUTPUT:
+TECH1 STDYX SAMPSTAT CINTERVAL;
+
+
+Model f – Model c with both autoregressive and cross-lagged paths constrained to be equal across time
+TITLE: RI_CLPM_code
+  DATA:
+    FILE = "fulldataRICLPM.csv";
+  VARIABLE:
+    NAMES = id age2 age3 age4 CESD2 CESD3 CESD4
+    male2 male3 male4 minzu2 minzu3 minzu4
+    ace2 ace3 ace4 live2 live3 live4
+    regi2 regi3 regi4 camp2 camp3 camp4
+    bmi2 bmi3 bmi4 bully2 bully3 bully4 
+    acap2 acap3 acap4 unlis2 unlis3 unlis4;
+    
+    USEVARIABLES = CESD2 CESD3 CESD4
+    unlis2 unlis3 unlis4 
+    age2 male2 minzu2 live2 regi2 camp2 
+    ace2 ace3 ace4 bmi2 bmi3 bmi4;
+   
+  ANALYSIS:
+    TYPE = GENERAL;
+    ESTIMATOR = MLR;
+    MODEL = NOCOV; 
+  
+  MODEL:
+    !Create 2 individual factors (random intercepts)
+    RI_unlis BY unlis2@1 unlis3@1 unlis4@1;
+    RI_CESD BY CESD2@1 CESD3@1 CESD4@1;
+
+    !Create within-person centered variables
+    c_unlis2 BY unlis2@1;
+    c_unlis3 BY unlis3@1;
+    c_unlis4 BY unlis4@1;
+    c_CESD2 BY CESD2@1;
+    c_CESD3 BY CESD3@1;
+    c_CESD4 BY CESD4@1;
+    
+    !Constrain the measurement error variances to 0
+    unlis2-unlis4@0;
+    CESD2-CESD4@0;
+    
+    !Estimate the lagged effects between the within-person centered variables
+    c_unlis3 ON c_unlis2 (a1)
+                     c_CESD2 (cl1);
+    c_unlis4 ON c_unlis3 (a1) 
+                     c_CESD3 (cl1);
+    c_CESD3 ON c_CESD2 (a2)
+                     c_unlis2 (cl2);
+    c_CESD4 ON c_CESD3 (a2)
+                     c_unlis3 (cl2);
+    
+    ! Estimate covariance between random intercepts
+    RI_unlis WITH RI_CESD;
+    
+    !Estimate the covariance between the within-person centered
+    !variables at the first wave
+    c_unlis2 WITH c_CESD2;
+    
+    !Estimate the covariances between the residuals of
+    !the within-person centered variables
+    c_unlis3 WITH c_CESD3;
+    c_unlis4 WITH c_CESD4;
+    
+    !Fix the correlation between the individual factors
+    !and the other exogenous variables to 0
+    RI_unlis WITH c_unlis2@0 c_CESD2@0;
+    RI_CESD WITH c_CESD2@0 c_unlis2@0;
+    
+    !=== Add the covariates as predictor variables ===
+    unlis2 ON age2 male2 minzu2 live2 regi2 camp2;
+    CESD2 ON age2 male2 minzu2 live2 regi2 camp2;
+    
+    unlis2 ON ace2 bmi2;
+    CESD2 ON ace2 bmi2;
+
+    unlis3 ON ace3 bmi3;
+    CESD3 ON ace3 bmi3;
+
+    unlis4 ON ace4 bmi4;
+    CESD4 ON ace4 bmi4;
+
+  OUTPUT:
+    TECH1 STDYX SAMPSTAT CINTERVAL;
