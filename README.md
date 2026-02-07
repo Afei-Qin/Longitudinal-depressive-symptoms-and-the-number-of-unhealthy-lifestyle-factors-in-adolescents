@@ -6,12 +6,13 @@ This repository provides analysis code for the study: **“Longitudinal depressi
 
 - **01_mplus_RI-CLPMs_codes.inp**  
   Mplus input scripts for Random Intercept Cross-Lagged Panel Models (RI-CLPMs), including:
-  - Model A: baseline model (no covariates)
-  - Model B: time-invariant covariates (T1)
-  - Model C: time-invariant + time-varying covariates (T1–T3)
-  - Model D: autoregressive paths constrained equal across time
-  - Model E: cross-lagged paths constrained equal across time
-  - Model F: autoregressive + cross-lagged paths constrained equal across time
+  
+Model A: baseline RI-CLPM (no covariates)
+Model B: RI-CLPM with time-invariant covariates at T1 (age, sex, ethnicity, living status, region, campus)
+Model C: RI-CLPM with time-invariant covariates at T1 + time-varying covariates at T1–T3 (ACE and BMI)
+Model D: Model C with autoregressive paths constrained equal across time
+Model E: Model C with cross-lagged paths constrained equal across time
+Model F: Model C with both autoregressive and cross-lagged paths constrained equal across time
 
 - **02_rcs_CESD22_to_unlifestyle24.R**  
   Restricted cubic spline (RCS) analysis evaluating the (non)linear association between baseline depressive symptoms (CESD_22) and follow-up unhealthy lifestyle count (unlifestyle_24), adjusted for covariates.
