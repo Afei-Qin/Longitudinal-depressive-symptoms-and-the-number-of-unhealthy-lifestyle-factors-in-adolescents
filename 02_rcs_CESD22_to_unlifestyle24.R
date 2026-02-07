@@ -64,6 +64,6 @@ ggplot(beta_df, aes(x = CESD_22, y = yhat)) +
   geom_line(linewidth = 1, alpha = 0.9, colour = "red") +
   geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.3, fill = "red") +
   theme_classic() +
-  labs(x = "Baseline depressive symptoms (CESD_22)",
+  labs(x = "Baseline depressive symptoms",
        y = "Beta (95% CI)") +
   annotate("text", x = 12, y = 0.5, label = lab, size = 4)
