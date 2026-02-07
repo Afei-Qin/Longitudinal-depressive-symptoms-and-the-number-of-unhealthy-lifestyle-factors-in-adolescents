@@ -1,4 +1,4 @@
-## Restricted cubic spline (RCS): CESD_22 -> unlifestyle_24 ##
+## Restricted cubic spline (RCS): CESD_22 -> unlifestyle_24 ## 
 # Packages
 library(ggplot2)
 library(rms)
@@ -50,9 +50,9 @@ beta <- Predict(fit, CESD_22, ref.zero = TRUE)
 beta_df <- as.data.frame(beta)
 
 # ---- minimal, robust p extraction ----
-rn <- trimws(rownames(an))                           # 去掉行名前后空格
-pcol <- grep("^P", colnames(an), value = TRUE)[1]    # 找到P列（通常就是"P"）
-idx_nl <- which(tolower(rn) == "nonlinear")          # 找 Nonlinear 行（忽略空格差异）
+rn <- trimws(rownames(an))
+pcol <- grep("^P", colnames(an), value = TRUE)[1]
+idx_nl <- which(tolower(rn) == "nonlinear")
 
 p_nl <- if (length(idx_nl) == 1) an[idx_nl, pcol] else NA
 lab  <- if (is.na(p_nl)) "p for non-linearity: NA" else
@@ -61,8 +61,8 @@ lab  <- if (is.na(p_nl)) "p for non-linearity: NA" else
 # -------------------------------------
 
 ggplot(beta_df, aes(x = CESD_22, y = yhat)) +
-  geom_line(linewidth = 1, alpha = 0.9) +
-  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.3) +
+  geom_line(linewidth = 1, alpha = 0.9, colour = "red") +
+  geom_ribbon(aes(ymin = lower, ymax = upper), alpha = 0.3, fill = "red") +
   theme_classic() +
   labs(x = "Baseline depressive symptoms (CESD_22)",
        y = "Beta (95% CI)") +
