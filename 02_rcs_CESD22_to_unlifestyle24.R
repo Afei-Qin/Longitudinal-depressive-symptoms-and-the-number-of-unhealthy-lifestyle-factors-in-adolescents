@@ -4,6 +4,8 @@ library(ggplot2)
 library(rms)
 
 # Data: be (analysis dataset)
+# NOTE: The raw data are not publicly available due to ethics/privacy restrictions
+# This script assumes an analysis dataset named `be` has been prepared with the variables used below
 # Make categorical covariates factors
 be$male_22        <- factor(be$male_22)
 be$minzu_22       <- factor(be$minzu_22)
